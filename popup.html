@@ -1,0 +1,452 @@
+<!--/**
+ * ========================================================================
+ * PROJECT: EMAIL MINER PRO - DEMO VERSION
+ * ========================================================================
+ * AUTHOR: khdcoder (Khalid)
+ * ORGANIZATION: Khalid Software House
+ * ROLE: Founder & Lead Developer
+ * FILE:(Core Frontend Engine)
+ * TECH STACK: Node.js, Express.js, Html, Css, Js
+ * VERSION: 15.200.5
+ * COPYRIGHT NOTICE:
+ * (c) 2026 Khalid Software House. All Rights Reserved.
+ * ========================================================================
+ */-->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MailMiner Pro</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+        :root {
+            --primary: #0F172A; --accent: #3B82F6; --accent-hover: #2563EB;
+            --bg-body: #F1F5F9; --surface: #FFFFFF; --text-main: #334155;
+            --text-light: #64748B; --border: #E2E8F0; --danger: #EF4444;
+            --success: #22C55E; --radius: 6px; --shadow: 0 2px 4px rgba(0,0,0,0.05);
+            --input-bg: #FFFFFF; --hover-row: #F8FAFC; --chart-bar: #3B82F6;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            width: 380px; height: 580px; font-family: 'Inter', sans-serif;
+            background-color: var(--bg-body); color: var(--text-main);
+            display: flex; flex-direction: column; overflow: hidden; transition: background-color 0.3s, color 0.3s;
+        }
+
+        /* === DARK MODE === */
+        body.dark {
+            --primary: #0F172A; --accent: #60A5FA; --accent-hover: #3B82F6;
+            --bg-body: #0F172A; --surface: #1E293B; --text-main: #E2E8F0;
+            --text-light: #94A3B8; --border: #334155; --danger: #F87171;
+            --success: #4ADE80; --shadow: 0 2px 4px rgba(0,0,0,0.3);
+            --input-bg: #0F172A; --hover-row: #1E293B; --chart-bar: #60A5FA;
+        }
+        body.dark .license-box { background: #1E293B; }
+        body.dark .license-box h2 { color: #E2E8F0; }
+        body.dark .license-box p { color: #94A3B8; }
+        body.dark .license-input { background: #0F172A; color: #E2E8F0; border-color: #334155; }
+        body.dark .license-input:focus { border-color: #60A5FA; }
+        body.dark .license-btn { background: #3B82F6; }
+        body.dark #licenseModal { background: rgba(0,0,0,0.9); }
+        body.dark .export-dropdown { background: #1E293B; border-color: #334155; }
+        body.dark .export-option { color: #E2E8F0; }
+        body.dark .export-option:hover { background: #0F172A; }
+        body.dark .template-preview-card { background: #0F172A; border-color: #334155; color: #94A3B8; }
+        body.dark .template-preview-card strong { color: #60A5FA; }
+        body.dark .status-dropdown-menu { background: #1E293B; border-color: #334155; }
+        body.dark .status-dropdown-menu div { color: #E2E8F0; }
+        body.dark .status-dropdown-menu div:hover { background: #0F172A; }
+        body.dark .import-zone { border-color: #334155; }
+        body.dark .import-zone:hover { border-color: #60A5FA; background: rgba(96,165,250,0.05); }
+
+        /* === HEADER === */
+        header {
+            background: var(--primary); color: white; padding: 10px 16px;
+            display: flex; align-items: center; justify-content: space-between;
+            box-shadow: var(--shadow); flex-shrink: 0; height: 50px;
+        }
+        .logo-area { display: flex; flex-direction: column; justify-content: center; }
+        .logo-area h1 { font-size: 14px; font-weight: 600; letter-spacing: 0.5px; display: flex; align-items: center; gap: 6px; }
+        .logo-area span { font-size: 9px; color: #94A3B8; text-transform: uppercase; letter-spacing: 1px; margin-top: 1px; }
+        .status-dot { width: 7px; height: 7px; border-radius: 50%; background-color: #94A3B8; transition: background-color 0.3s; }
+        .status-dot.active { background-color: #22C55E; box-shadow: 0 0 6px #22C55E; }
+        .header-btns { display: flex; gap: 6px; }
+        .settings-btn {
+            background: rgba(255,255,255,0.1); border: none; color: white;
+            width: 34px; height: 34px; border-radius: 50%; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; transition: 0.2s;
+        }
+        .settings-btn:hover { background: rgba(255,255,255,0.2); }
+        .settings-btn.rotate:hover { transform: rotate(45deg); }
+        .settings-btn svg { width: 15px; height: 15px; }
+
+        /* === MAIN === */
+        #mainView { display: flex; flex-direction: column; height: 100%; }
+        .controls {
+            padding: 8px 10px; display: flex; flex-direction: column; gap: 5px;
+            background: var(--surface); border-bottom: 1px solid var(--border); flex-shrink: 0;
+            transition: background-color 0.3s, border-color 0.3s;
+        }
+        .btn-row { display: flex; gap: 5px; }
+        .toggle-row {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 3px 8px; background: var(--hover-row); border-radius: var(--radius);
+            border: 1px solid var(--border); min-height: 26px; transition: all 0.3s;
+        }
+        .toggle-label { font-size: 10px; font-weight: 600; color: var(--text-main); display: flex; align-items: center; gap: 5px; }
+        .switch { position: relative; display: inline-block; width: 28px; height: 16px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; inset: 0; background-color: #cbd5e1; transition: .4s; border-radius: 20px; }
+        .slider:before { position: absolute; content: ""; height: 12px; width: 12px; left: 2px; bottom: 2px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: var(--accent); }
+        input:checked + .slider:before { transform: translateX(12px); }
+
+        button { border: none; border-radius: var(--radius); padding: 5px 8px; font-size: 10px; font-weight: 600; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 4px; }
+        .btn-main { background: var(--accent); color: white; flex: 1; box-shadow: 0 1px 2px rgba(59,130,246,0.2); }
+        .btn-main:hover { background: var(--accent-hover); }
+        .btn-main:disabled { opacity: 0.7; cursor: wait; }
+        .btn-sec { background: var(--hover-row); border: 1px solid var(--border); color: var(--text-main); }
+        .btn-sec:hover { border-color: var(--accent); color: var(--accent); }
+
+        /* === LIST VIEW === */
+        .list-view { flex: 1; overflow-y: auto; padding: 0; position: relative; min-height: 0; }
+        .search-bar {
+            display: flex; align-items: center; gap: 6px; padding: 6px 12px;
+            background: var(--surface); border-bottom: 1px solid var(--border); transition: all 0.3s;
+        }
+        .search-bar svg { width: 13px; height: 13px; color: var(--text-light); flex-shrink: 0; }
+        .search-bar input { flex: 1; border: none; outline: none; background: transparent; font-family: inherit; font-size: 11px; color: var(--text-main); }
+        .search-bar input::placeholder { color: var(--text-light); }
+
+        /* === BULK BAR === */
+        .bulk-bar {
+            display: none; align-items: center; gap: 6px; padding: 5px 12px;
+            background: #EFF6FF; border-bottom: 1px solid #BFDBFE;
+            font-size: 10px; font-weight: 600; color: #1E40AF; animation: slideDown 0.2s ease;
+        }
+        body.dark .bulk-bar { background: #1E3A5F; border-color: #1E40AF; color: #93C5FD; }
+        .bulk-bar.show { display: flex; }
+        .bulk-bar .bulk-actions { display: flex; gap: 4px; margin-left: auto; }
+        .bulk-bar .bulk-actions button { padding: 3px 6px; font-size: 9px; border-radius: 4px; }
+        .bulk-btn-danger { background: #FEE2E2 !important; color: #DC2626 !important; border: 1px solid #FECACA !important; }
+        .bulk-btn-danger:hover { background: #FECACA !important; }
+        .bulk-btn-info { background: #DBEAFE !important; color: #2563EB !important; border: 1px solid #BFDBFE !important; }
+        .bulk-btn-info:hover { background: #BFDBFE !important; }
+        body.dark .bulk-btn-danger { background: #450A0A !important; color: #F87171 !important; border-color: #7F1D1D !important; }
+        body.dark .bulk-btn-info { background: #172554 !important; color: #60A5FA !important; border-color: #1E3A5F !important; }
+
+        .status-bar { padding: 5px 12px; font-size: 10px; color: var(--text-light); background: var(--hover-row); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; transition: all 0.3s; }
+
+        /* === DASHBOARD === */
+        #dashboardSection { padding: 5px 12px; border-bottom: 1px solid var(--border); background: var(--surface); transition: all 0.3s; }
+        .dashboard-card { border: 1px solid var(--border); border-radius: var(--radius); padding: 5px 8px; transition: border-color 0.3s; }
+        .chart-container { width: 100%; height: 50px; position: relative; margin-top: 3px; }
+        canvas { width: 100%; height: 100%; }
+
+        /* === TABLE === */
+        table { width: 100%; border-collapse: collapse; font-size: 11px; }
+        thead { background: var(--hover-row); position: sticky; top: 0; z-index: 5; transition: background-color 0.3s; }
+        th { text-align: left; padding: 5px 6px; font-size: 9px; text-transform: uppercase; color: var(--text-light); letter-spacing: 0.05em; }
+        tr { border-bottom: 1px solid var(--border); transition: background-color 0.15s; }
+        tr:hover { background-color: var(--hover-row); }
+        td { padding: 4px 6px; vertical-align: top; }
+        .td-check { width: 18px; text-align: center; }
+        .td-check input[type="checkbox"] { width: 12px; height: 12px; cursor: pointer; accent-color: var(--accent); }
+        .td-contact { width: 42%; }
+        .td-source { width: 30%; }
+        .td-status { width: 55px; text-align: center; }
+        .td-action { width: 20px; text-align: center; }
+
+        .email-cell { font-weight: 600; color: var(--text-main); display: block; font-size: 11px; text-decoration: none; word-break: break-all; }        .name-cell { font-size: 9px; color: var(--text-light); display: block; margin-top: 1px; }
+        .phone-cell { font-size: 9px; color: var(--success); display: flex; align-items: center; gap: 3px; margin-top: 2px; }
+        .phone-cell svg { width: 10px; height: 10px; flex-shrink: 0; }
+
+        .score-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+        .score-high { background: #22C55E; box-shadow: 0 0 4px rgba(34,197,94,0.4); }
+        .score-mid { background: #F59E0B; box-shadow: 0 0 4px rgba(245,158,11,0.4); }
+        .score-low { background: #EF4444; box-shadow: 0 0 4px rgba(239,68,68,0.4); }
+        .score-num { font-size: 9px; font-weight: 700; margin-left: 3px; }
+
+        .status-badge {
+            display: inline-block; font-size: 8px; font-weight: 700; text-transform: uppercase;
+            padding: 2px 5px; border-radius: 3px; cursor: pointer; letter-spacing: 0.3px;
+            transition: 0.15s; user-select: none; position: relative;
+        }
+        .status-badge:hover { opacity: 0.8; transform: scale(1.05); }
+        .status-new { background: #F1F5F9; color: #64748B; border: 1px solid #E2E8F0; }
+        .status-contacted { background: #DBEAFE; color: #1D4ED8; border: 1px solid #BFDBFE; }
+        .status-replied { background: #DCFCE7; color: #15803D; border: 1px solid #BBF7D0; }
+        .status-skip { background: #FEE2E2; color: #DC2626; border: 1px solid #FECACA; }
+        body.dark .status-new { background: #334155; color: #94A3B8; border-color: #475569; }
+        body.dark .status-contacted { background: #1E3A5F; color: #60A5FA; border-color: #1E40AF; }
+        body.dark .status-replied { background: #14532D; color: #4ADE80; border-color: #166534; }
+        body.dark .status-skip { background: #450A0A; color: #F87171; border-color: #7F1D1D; }
+
+        .status-dropdown-menu {
+            position: absolute; top: 100%; left: 50%; transform: translateX(-50%);
+            background: white; border: 1px solid var(--border); border-radius: var(--radius);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: 110px; z-index: 30;
+            display: none; overflow: hidden;
+        }
+        .status-dropdown-menu.show { display: block; }
+        .status-dropdown-menu div { padding: 6px 8px; font-size: 10px; cursor: pointer; font-weight: 600; }
+        .status-dropdown-menu div:hover { background: var(--hover-row); }
+
+        .source-link { color: var(--text-main); font-size: 10px; text-decoration: none; display: block; word-break: break-all; }
+        .source-sub { font-size: 9px; color: #94A3B8; margin-top: 1px; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100px; }
+
+        .action-btn { cursor: pointer; color: #CBD5E1; padding: 2px; border-radius: 4px; }
+        .action-btn:hover { color: var(--danger); background: #FEF2F2; }
+        body.dark .action-btn:hover { background: #450A0A; }
+
+        .gmail-link { text-decoration: none; display: inline-flex; align-items: center; justify-content: center; transition: all 0.2s; color: #94A3B8; cursor: pointer; flex-shrink: 0; }
+        .gmail-link:hover { transform: scale(1.1); }
+        .gmail-link.clicked { color: #22C55E !important; }
+        .gmail-link svg { width: 13px; height: 13px; fill: currentColor !important; pointer-events: none; }
+
+        /* === SETTINGS === */
+        #settingsView { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: var(--surface); z-index: 50; display: flex; flex-direction: column; transform: translateX(100%); transition: transform 0.3s ease-in-out; }
+        #settingsView.open { transform: translateX(0); }
+        .settings-header { padding: 12px 16px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background: var(--bg-body); transition: all 0.3s; }
+        .settings-header h2 { font-size: 14px; font-weight: 600; }
+        .close-btn { background: none; border: none; font-size: 18px; cursor: pointer; color: var(--text-light); }
+        .settings-content { padding: 12px 16px; overflow-y: auto; flex: 1; }
+        .setting-group { margin-bottom: 14px; }
+.setting-group label { display: block; font-size: 10px; font-weight: 600; margin-bottom: 5px; color: var(--text-main); }        .setting-input, .setting-select { width: 100%; padding: 7px; border: 1px solid var(--border); border-radius: var(--radius); font-family: inherit; font-size: 11px; margin-bottom: 3px; background: var(--input-bg); color: var(--text-main); transition: all 0.3s; }
+        .setting-input:focus, .setting-select:focus { border-color: var(--accent); outline: none; }
+        .editor-toolbar { display: flex; gap: 4px; margin-bottom: 4px; align-items: center; }
+        .editor-btn { width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; background: var(--hover-row); border: 1px solid var(--border); border-radius: 4px; cursor: pointer; font-size: 11px; color: var(--text-main); transition: 0.15s; }
+        .editor-btn:hover { background: #EFF6FF; color: var(--accent); }
+        body.dark .editor-btn:hover { background: #1E3A5F; }
+        #templateBody { width: 100%; min-height: 70px; padding: 7px; border: 1px solid var(--border); border-radius: var(--radius); font-family: inherit; font-size: 11px; background: var(--input-bg); color: var(--text-main); outline: none; transition: all 0.3s; }
+        #templateBody:focus { border-color: var(--accent); }
+        .setting-note { font-size: 9px; color: var(--text-light); margin-top: 4px; line-height: 1.4; }
+        .template-preview-card { background: var(--hover-row); border: 1px dashed var(--border); border-radius: var(--radius); padding: 7px; margin-top: 5px; font-size: 10px; color: var(--text-light); line-height: 1.4; max-height: 70px; overflow-y: auto; display: none; transition: all 0.3s; }
+        .template-preview-card.show { display: block; }
+        .template-preview-card strong { color: var(--accent); }
+
+        .copy-template-btn { color: var(--text-light) !important; }
+        .copy-template-btn:hover { background: #EFF6FF !important; color: var(--accent) !important; }
+        body.dark .copy-template-btn:hover { background: #1E3A5F !important; }
+        .copy-template-btn.copied { background: #DCFCE7 !important; color: #16A34A !important; border-color: #86EFAC !important; }
+        body.dark .copy-template-btn.copied { background: #14532D !important; border-color: #166534 !important; }
+        .copy-template-btn.copied #copyIcon { display: none !important; }
+        .copy-template-btn.copied #tickIcon { display: block !important; stroke: #16A34A !important; }
+        body.dark .copy-template-btn.copied #tickIcon { stroke: #4ADE80 !important; }
+        .copy-template-btn.copied #copyBtnText { color: #16A34A !important; }
+        body.dark .copy-template-btn.copied #copyBtnText { color: #4ADE80 !important; }
+
+        .import-zone { border: 2px dashed var(--border); border-radius: var(--radius); padding: 14px; text-align: center; cursor: pointer; transition: 0.2s; }
+        .import-zone:hover { border-color: var(--accent); background: rgba(59,130,246,0.05); }
+        .import-zone svg { width: 22px; height: 22px; color: var(--text-light); margin-bottom: 4px; }
+        .import-zone p { font-size: 10px; color: var(--text-light); }
+        .import-zone p strong { color: var(--accent); }
+
+        .export-dropdown { position: absolute; top: 32px; right: 0; background: white; border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); width: 145px; display: none; flex-direction: column; z-index: 20; }
+        .export-dropdown.show { display: flex; }
+        .export-option { padding: 7px 10px; font-size: 10px; cursor: pointer; display: flex; align-items: center; gap: 6px; color: var(--text-main); }
+        .export-option:hover { background: var(--bg-body); }
+
+        footer { padding: 6px; text-align: center; font-size: 9px; color: var(--text-light); border-top: 1px solid var(--border); background: var(--surface); flex-shrink: 0; transition: all 0.3s; }
+        footer a { color: var(--text-main); text-decoration: none; font-weight: 600; }
+
+        #toast { position: fixed; bottom: 45px; left: 50%; transform: translateX(-50%); background: #1E293B; color: white; padding: 5px 10px; border-radius: 4px; font-size: 10px; opacity: 0; pointer-events: none; transition: opacity 0.3s; z-index: 100; white-space: nowrap; }
+        #toast.show { opacity: 1; }
+
+        .watermark { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-35deg); font-size: 30px; font-weight: 900; color: rgba(0,0,0,0.03); pointer-events: none; z-index: 9999; text-transform: uppercase; letter-spacing: 10px; white-space: nowrap; display: none; }
+        body.dark .watermark { color: rgba(255,255,255,0.02); }
+        .trial-badge { background: #EF4444; color: white; font-size: 8px; padding: 2px 5px; border-radius: 4px; margin-left: 6px; vertical-align: middle; font-weight: 700; letter-spacing: 0.5px; display: none; }
+
+        #licenseModal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15,23,42,0.95); z-index: 9999; display: none; align-items: center; justify-content: center; flex-direction: column; padding: 20px; }
+        #licenseModal.show { display: flex; }
+        .license-box { background: white; padding: 24px; border-radius: 8px; text-align: center; width: 300px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+        .license-box h2 { font-size: 16px; margin-bottom: 8px; color: var(--primary); }
+        .license-box p { font-size: 11px; color: var(--text-light); margin-bottom: 16px; }
+        .license-input { width: 100%; padding: 10px; border: 2px solid var(--border); border-radius: 4px; text-align: center; font-weight: 600; letter-spacing: 1px; margin-bottom: 12px; font-family: inherit; }
+        .license-input:focus { border-color: var(--accent); outline: none; }
+        .license-btn { width: 100%; background: var(--accent); color: white; border: none; padding: 10px; border-radius: 4px; cursor: pointer; font-weight: 600; font-size: 12px; }
+        .license-btn:hover { background: var(--accent-hover); }
+        .license-error { color: var(--danger); font-size: 10px; margin-top: 8px; font-weight: 600; min-height: 16px; }
+        .trial-link { font-size: 10px; color: var(--text-light); margin-top: 12px; cursor: pointer; }
+        .trial-link:hover { text-decoration: underline; }
+        .empty-state { text-align: center; padding: 25px 20px; color: var(--text-light); }
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+    <div id="licenseModal">
+        <div class="license-box">
+            <h2>🔒 Activate License</h2>
+            <p id="licenseDesc">Enter your 15-digit key to activate full version.</p>
+            <input type="text" id="licenseInput" class="license-input" placeholder="XXXX-XXXX-XXXX-XXX" maxlength="19">
+            <button id="activateLicenseBtn" type="button" class="license-btn">Activate Now</button>
+            <div id="licenseError" class="license-error"></div>
+            <div id="startTrialBtn" class="trial-link">Start 2-Day Trial</div>
+        </div>
+    </div>
+    <div class="watermark">TRIAL VERSION</div>
+
+    <div id="mainView">
+        <header>
+            <div class="logo-area">
+                <h1>
+                    <span id="headerStatusDot" class="status-dot"></span>
+                    EMail Miner Pro
+                    <span class="trial-badge" style="color: white;">TRIAL</span>
+                </h1>
+                <span id="headerStatusText">Manual Mode</span>
+            </div>
+            <div class="header-btns">
+                <button id="darkModeBtn" class="settings-btn" title="Toggle Dark Mode">
+                    <svg id="moonIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+                    <svg id="sunIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none;"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+                </button>
+                <button id="settingsBtn" class="settings-btn rotate" title="Settings">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                </button>
+            </div>
+        </header>
+
+        <div class="controls">
+            <div class="toggle-row">
+                <div class="toggle-label"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"></path></svg> Auto-Mining</div>
+                <label class="switch"><input type="checkbox" id="autoToggle"><span class="slider"></span></label>
+            </div>
+            <div class="toggle-row">
+                <div class="toggle-label"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg> Auto-Pagination</div>
+                <label class="switch"><input type="checkbox" id="autoNextToggle"><span class="slider"></span></label>
+            </div>
+            <div class="toggle-row">
+                <div class="toggle-label"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg> Deep Scan (Socials)</div>
+                <label class="switch"><input type="checkbox" id="deepToggle" checked><span class="slider"></span></label>
+            </div>
+            <div class="btn-row">
+                <button id="extractBtn" class="btn-main"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg> Mine Current</button>
+                <button id="bulkMailBtn" class="btn-sec" style="background: #FEF3C7; color: #D97706; border-color: #FCD34D;"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg> Bulk Mail</button>
+                <div style="position: relative;">
+                    <button id="exportBtn" class="btn-sec">Data ▾</button>
+                    <div id="exportMenu" class="export-dropdown">
+                        <div class="export-option" id="exportCsv">📥 Download CSV</div>
+                        <div class="export-option" id="exportJson">📥 Download JSON</div>
+                        <div class="export-option" id="sendSheets">📊 Send to Sheets</div>
+                        <div class="export-option" id="importCsv" style="border-top:1px solid var(--border); color:var(--accent);">📤 Import CSV</div>
+                    </div>
+                </div>
+                <button id="clearBtn" class="btn-sec" style="width: 30px;" title="Clear All"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
+            </div>
+        </div>
+
+        <div class="list-view">
+            <div class="status-bar">
+                <span id="count">0 Records</span>
+                <span id="modeBadge" style="font-weight:600; color:#64748B">MANUAL</span>
+            </div>
+            <div class="search-bar">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                <input type="text" id="searchInput" placeholder="Search emails, names, domains...">
+            </div>
+            <div id="bulkBar" class="bulk-bar">
+                <span id="selectedCount">0 selected</span>
+                <div class="bulk-actions">
+                    <button id="bulkStatusBtn" class="bulk-btn-info">Status ▾</button>
+                    <button id="bulkExportBtn" class="bulk-btn-info">Export</button>
+                    <button id="bulkDeleteBtn" class="bulk-btn-danger">Delete</button>
+                </div>
+                <div id="bulkStatusMenu" class="status-dropdown-menu" style="position:relative; display:none; margin-left:0;">
+                    <div data-status="new">⚪ New</div>
+                    <div data-status="contacted">🔵 Contacted</div>
+                    <div data-status="replied">🟢 Replied</div>
+                    <div data-status="skip">🔴 Not Interested</div>
+                </div>
+            </div>
+            <div id="dashboardSection">
+                <div class="dashboard-card">
+                    <div style="font-size: 9px; font-weight: 600; color: var(--text-light); display: flex; justify-content: space-between;">
+                        <span>Activity (24h)</span>
+                        <span style="color: var(--accent);" id="leadsToday">0 new</span>
+                    </div>
+                    <div class="chart-container"><canvas id="activityChart"></canvas></div>
+                </div>
+            </div>
+            <table id="dataTable">
+                <thead>
+                    <tr>
+                        <th class="td-check"><input type="checkbox" id="selectAll"></th>
+                        <th class="td-contact">Contact</th>
+                        <th class="td-source">Source</th>
+                        <th class="td-status">Status</th>
+                        <th class="td-action"></th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody"></tbody>
+            </table>
+            <div id="emptyState" class="empty-state" style="display:none;">
+                <svg style="width: 28px; height: 28px; margin-bottom: 8px; color: #CBD5E1;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
+                <p style="font-size: 11px;">No data extracted yet.</p>
+            </div>
+        </div>
+        <footer>Powered by <a href="https://khalid-software-house.web.app" target="_blank">Khalid Software House</a></footer>
+    </div>
+
+    <!-- SETTINGS VIEW -->
+    <div id="settingsView">
+        <div class="settings-header">
+            <h2>Settings</h2>
+            <button id="closeSettings" class="close-btn">&times;</button>
+        </div>
+        <div class="settings-content">
+            <div class="setting-group" style="background: var(--hover-row); padding: 10px; border-radius: 6px; border: 1px solid var(--border); transition: all 0.3s;">
+                <label style="color: var(--accent); font-size: 11px;">✉️ Email Template</label>
+                <label style="margin-top: 6px;">Quick Templates</label>
+                <select id="prebuiltTemplate" class="setting-select" style="cursor: pointer;">
+                    <option value="custom">-- Select Pre-built Template --</option>
+                    <option value="cold_outreach">❄️ Cold Outreach</option>
+                    <option value="service_pitch">💼 Service Pitch</option>
+                    <option value="collaboration">🤝 Collaboration Request</option>
+                    <option value="follow_up">🔄 Follow Up</option>
+                    <option value="product_demo">🎯 Product Demo Invite</option>
+                    <option value="seo_services">🔍 SEO Services</option>
+                    <option value="digital_marketing">📊 Digital Marketing</option>
+                </select>
+                <div id="templatePreview" class="template-preview-card"></div>
+                <label style="margin-top: 8px;">Subject</label>
+                <input type="text" id="templateSubject" class="setting-input" placeholder="Hi [Name], let's connect!">
+                <label style="margin-top: 6px;">Body</label>
+                <div class="editor-toolbar">
+                    <button id="btnBold" class="editor-btn" title="Bold"><b>B</b></button>
+                    <button id="btnItalic" class="editor-btn" title="Italic"><i>I</i></button>
+                    <button id="btnCopyTemplate" class="editor-btn copy-template-btn" title="Copy Template" style="margin-left: auto; width: auto; padding: 0 7px; gap: 4px; display: flex; align-items: center;">
+                        <svg id="copyIcon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                        <svg id="tickIcon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="display: none;"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                        <span id="copyBtnText" style="font-size: 9px; font-weight: 600;">Copy</span>
+                    </button>
+                </div>
+                <div id="templateBody" contenteditable="true">Hi [Name],<br><br>I noticed your website and wanted to reach out...<br><br>Best regards.</div>
+                <div class="setting-note">Variables: <strong>[Name]</strong> <strong>[Email]</strong> <strong>[Domain]</strong> <strong>[Website]</strong></div>
+            </div>
+            <div class="setting-group"><label>Domain Blacklist</label><input type="text" id="blacklistInput" class="setting-input" placeholder="gmail.com, outlook.com"></div>
+            <div class="setting-group"><label>Disposable Email Filter</label><select id="disposableSelect" class="setting-select"><option value="strict">Strict</option><option value="basic">Basic</option><option value="off">Disabled</option></select></div>
+            <div class="setting-group"><label>Google Sheets Webhook URL</label><input type="text" id="webhookUrl" class="setting-input" placeholder="https://script.google.com/..."></div>
+            <div class="setting-group">
+                <label>Notifications</label>
+                <label class="toggle-row" style="background:var(--input-bg); border:1px solid var(--border);"><span class="toggle-label">Notify at milestones</span><label class="switch"><input type="checkbox" id="notifToggle" checked><span class="slider"></span></label></label>
+            </div>
+            <div class="setting-group" style="border-top: 1px solid var(--border); padding-top: 14px;">
+                <label style="color: var(--accent);">📤 Import CSV</label>
+                <div class="import-zone" id="importZone">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                    <p>Click to upload CSV</p>
+                    <p style="margin-top:2px;">Format: <strong>Name, Email, Phone, Website</strong></p>
+                </div>
+                <input type="file" id="csvFileInput" accept=".csv" style="display:none;">
+            </div>
+            <button id="saveSettingsBtn" class="btn-main" style="width:100%; margin-top:8px;">Save Settings</button>
+        </div>
+    </div>
+    <div id="toast">Message</div>
+    <script src="popup.js"></script>
+</body>
+</html>
