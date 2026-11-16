@@ -5,7 +5,7 @@
   <img src="https://raw.githubusercontent.com/khdcoder/EMail-Miner-Pro/main/icons/icon128.png" alt="Logo" width="120" height="120">
 
   <!-- BADGES -->
-  ![Version](https://img.shields.io/badge/version-12.300.15-blue.svg)
+  ![Version](https://img.shields.io/badge/version-2.0.5-blue.svg)
   ![Chrome](https://img.shields.io/badge/Chrome-Extension-green.svg)
   ![License](https://img.shields.io/badge/license-MIT-blue.svg)
   ![Build](https://img.shields.io/badge/build-passing-brightgreen.svg)
